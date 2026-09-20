@@ -1,36 +1,15 @@
 from torch.utils.data import Dataset
 import numpy as np
-import os
 from PIL import Image
+from research_support import paired_files
 
 
 class NPY_datasets(Dataset):
     def __init__(self, path_Data, config, train=True):
         super(NPY_datasets, self)
-        # 根据 train 标志选择 train 或 val 子目录。
-        # images 与 masks 会排序后一一配对，因此文件命名必须能保证排序后顺序一致。
-        if train:
-            images_list = os.listdir(path_Data+'train/images/')
-            masks_list = os.listdir(path_Data+'train/masks/')
-            images_list = sorted(images_list)
-            masks_list = sorted(masks_list)
-            self.data = []
-            for i in range(len(images_list)):
-                img_path = path_Data+'train/images/' + images_list[i]
-                mask_path = path_Data+'train/masks/' + masks_list[i]
-                self.data.append([img_path, mask_path])
-            self.transformer = config.train_transformer
-        else:
-            images_list = os.listdir(path_Data+'val/images/')
-            masks_list = os.listdir(path_Data+'val/masks/')
-            images_list = sorted(images_list)
-            masks_list = sorted(masks_list)
-            self.data = []
-            for i in range(len(images_list)):
-                img_path = path_Data+'val/images/' + images_list[i]
-                mask_path = path_Data+'val/masks/' + masks_list[i]
-                self.data.append([img_path, mask_path])
-            self.transformer = config.test_transformer
+        split = 'train' if train else 'val'
+        self.data = [[str(image), str(mask)] for _, image, mask in paired_files(path_Data, split)]
+        self.transformer = config.train_transformer if train else config.test_transformer
         
     def __getitem__(self, indx):
         img_path, msk_path = self.data[indx]

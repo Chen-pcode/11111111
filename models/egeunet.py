@@ -168,7 +168,7 @@ class group_aggregation_bridge(nn.Module):
         - 融合后的 skip 特征，形状与 `xl` 对齐，即 [B, C_low, H, W]
         """
         if hasattr(self, 'frequency'):
-	xl = self.frequency(xl, mask)
+            xl = self.frequency(xl, mask)
         xh = self.pre_project(xh)
         xh = F.interpolate(xh, size=[xl.size(2), xl.size(3)], mode='bilinear', align_corners=True)
 

@@ -8,8 +8,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from configs.config_setting import setting_config
-from research_support import paired_files
-from run_frequency import package_versions
+from research_support import paired_files, package_versions
 from utils import set_seed
 
 
@@ -46,6 +45,8 @@ def make_config(argv=None):
     parser.add_argument("--visualize-ids", nargs="*", default=[], help="Val image stems for frequency panels")
     parser.add_argument("--visualize-stage", type=int, choices=range(1, 6), default=1)
     args = parser.parse_args(argv)
+    if args.visualize_ids:
+        parser.error("Frequency panel export is not implemented in train.py yet")
     config = SimpleNamespace(**{k: copy.deepcopy(v) for k, v in vars(setting_config).items()
                                 if not k.startswith("_") and not isinstance(v, (staticmethod, classmethod))})
     saved = None
@@ -127,7 +128,7 @@ def experiment_spec(config, train_dataset, val_dataset):
         expected = {(str(image.resolve()), str(mask.resolve())) for _, image, mask in paired_files(root, split)}
         actual = {(str(Path(image).resolve()), str(Path(mask).resolve())) for image, mask in dataset.data}
         if expected != actual:
-            raise ValueError(f"Original sorted image/mask pairing is inconsistent in {split}")
+            raise ValueError(f"Image/mask pairing is inconsistent in {split}")
         manifest[split] = [{"image": Path(image).relative_to(root).as_posix(),
                             "mask": Path(mask).relative_to(root).as_posix(),
                             "image_sha256": hashlib.sha256(Path(image).read_bytes()).hexdigest(),
@@ -136,7 +137,7 @@ def experiment_spec(config, train_dataset, val_dataset):
     source_root = Path(__file__).parent
     sources = {name: hashlib.sha256((source_root / name).read_bytes()).hexdigest() for name in (
         "train.py", "engine.py", "author_protocol.py", "configs/config_setting.py", "datasets/dataset.py",
-        "models/egeunet.py", "models/frequency_bridge.py", "utils.py", "research_support.py", "run_frequency.py")}
+        "models/egeunet.py", "models/frequency_bridge.py", "utils.py", "research_support.py")}
     spec = {"protocol": PROTOCOL, "selection": "min_val_loss", "report_split": "val",
             "independent_test": False, "settings": settings, "sources": sources,
             "packages": package_versions(),

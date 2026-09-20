@@ -6,9 +6,9 @@ from pytorch_wavelets import DWTForward, DWTInverse
 
 class FrequencyBridge(nn.Module):
     """
-    FrequencyBridge：频域桥接模块，替代原版EGE-UNet中的GAB
+    FrequencyBridge：频域增强模块，在原版EGE-UNet的GAB融合前增强低层特征
     核心思想：利用小波变换DWT将特征图分解为低频分量(轮廓/大体区域) + 高频分量(边缘/细节)
-    结合辅助预测mask的不确定性做门控gate，自适应筛选高低频修正特征，再逆小波IDWT融合回原图空间
+    结合辅助预测mask的不确定性做门控gate，筛选高频修正特征，再逆小波IDWT融合回原图空间
     用于U-Net的skip connection，用来融合encoder低层特征 + 高层语义引导(mask_logits)
     参数：
         channels: 输入特征图通道数

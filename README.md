@@ -1,4 +1,11 @@
 # EGE-UNet
+
+This fork adds optional frequency refinement and gating before GAB fusion. See
+[Kaggle instructions](KAGGLE_GUIDE.md) and the [modification log](MODIFICATION_LOG.md).
+Install dependencies with `pip install -r requirements.txt`. The default is the
+A0 baseline; use `python train.py --experiment A6 --data /path/to/dataset` to enable
+the frequency and mask-gating experiment. The upstream README follows below.
+
 This is the official code repository for "EGE-UNet: an Efficient Group Enhanced UNet for skin lesion segmentation", which is accpeted by *26th International Conference on Medical Image Computing and Computer Assisted Intervention (MICCAI2023)* as a regular paper!
 
 **0. Main Environments**

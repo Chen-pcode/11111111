@@ -1,0 +1,14 @@
+torch
+torchvision
+numpy
+Pillow
+scipy
+scikit-learn
+matplotlib
+tqdm
+timm
+einops
+thop
+tensorboardX
+pytorch-wavelets
+PyWavelets

@@ -31,16 +31,17 @@ def train_one_epoch(train_loader,
     - targets: [B, 1, H, W]
     """
     model.train()
+    device = next(model.parameters()).device
     loss_list = []
 
     for iter, data in enumerate(train_loader):
         # `step` 用于 TensorBoard 横轴，这里作者按“累计迭代次数”来记。
-        step += iter
+        step += 1
 
         optimizer.zero_grad()
         images, targets = data
-        images = images.cuda(non_blocking=True).float()
-        targets = targets.cuda(non_blocking=True).float()
+        images = images.to(device, non_blocking=True).float()
+        targets = targets.to(device, non_blocking=True).float()
 
         # 当 gt_ds=True 时，模型返回：
         # 1. 5 个辅助预测组成的元组 gt_pre
@@ -87,6 +88,7 @@ def val_one_epoch(test_loader,
     - sensitivity
     """
     model.eval()
+    device = next(model.parameters()).device
     preds = []
     gts = []
     loss_list = []
@@ -94,8 +96,8 @@ def val_one_epoch(test_loader,
     with torch.no_grad():
         for data in tqdm(test_loader):
             img, msk = data
-            img = img.cuda(non_blocking=True).float()
-            msk = msk.cuda(non_blocking=True).float()
+            img = img.to(device, non_blocking=True).float()
+            msk = msk.to(device, non_blocking=True).float()
 
             gt_pre, out = model(img)
             loss = criterion(gt_pre, out, msk)
@@ -118,7 +120,7 @@ def val_one_epoch(test_loader,
         y_pre = np.where(preds >= config.threshold, 1, 0)
         y_true = np.where(gts >= 0.5, 1, 0)
 
-        confusion = confusion_matrix(y_true, y_pre)
+        confusion = confusion_matrix(y_true, y_pre, labels=[0, 1])
         TN, FP, FN, TP = confusion[0, 0], confusion[0, 1], confusion[1, 0], confusion[1, 1]
 
         accuracy = float(TN + TP) / float(np.sum(confusion)) if float(np.sum(confusion)) != 0 else 0
@@ -157,6 +159,7 @@ def test_one_epoch(test_loader,
     2. 日志文案写成 test，而不是 val
     """
     model.eval()
+    device = next(model.parameters()).device
     preds = []
     gts = []
     loss_list = []
@@ -164,8 +167,8 @@ def test_one_epoch(test_loader,
     with torch.no_grad():
         for i, data in enumerate(tqdm(test_loader)):
             img, msk = data
-            img = img.cuda(non_blocking=True).float()
-            msk = msk.cuda(non_blocking=True).float()
+            img = img.to(device, non_blocking=True).float()
+            msk = msk.to(device, non_blocking=True).float()
 
             gt_pre, out = model(img)
             loss = criterion(gt_pre, out, msk)
@@ -197,7 +200,7 @@ def test_one_epoch(test_loader,
         y_pre = np.where(preds >= config.threshold, 1, 0)
         y_true = np.where(gts >= 0.5, 1, 0)
 
-        confusion = confusion_matrix(y_true, y_pre)
+        confusion = confusion_matrix(y_true, y_pre, labels=[0, 1])
         TN, FP, FN, TP = confusion[0, 0], confusion[0, 1], confusion[1, 0], confusion[1, 1]
 
         accuracy = float(TN + TP) / float(np.sum(confusion)) if float(np.sum(confusion)) != 0 else 0
@@ -212,7 +215,7 @@ def test_one_epoch(test_loader,
             logger.info(log_info)
 
         log_info = (
-            f'test of best model, loss: {np.mean(loss_list):.4f},miou: {miou}, '
+            f'validation of best model (not independent test), loss: {np.mean(loss_list):.4f},miou: {miou}, '
             f'f1_or_dsc: {f1_or_dsc}, accuracy: {accuracy}, '
             f'specificity: {specificity}, sensitivity: {sensitivity}, confusion_matrix: {confusion}'
         )
