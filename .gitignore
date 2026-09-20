@@ -1,0 +1,17 @@
+# Python cache and virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local datasets and training artifacts
+/data/
+/results/
+/pre_trained/
+*.pth
+*.pt
+
+# Local environment configuration
+.env
+.env.*
+!.env.example
